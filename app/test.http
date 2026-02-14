@@ -1,0 +1,46 @@
+### KYC submit
+POST http://127.0.0.1:8000/kyc/submit
+Content-Type: application/json
+
+{
+  "user_id": "101",
+  "full_name": "Alice",
+  "email": "alice@example.com",
+  "document_type": "PAN",
+  "document_number": "ABCDE1234F"
+}
+
+
+### Get KYC result
+GET http://127.0.0.1:8000/kyc/result/101
+
+
+### Update KYC status
+PUT http://127.0.0.1:8000/kyc/update/101?status=verified
+
+
+### Get updated KYC result
+GET http://127.0.0.1:8000/kyc/result/101
+
+### Get all KYC records
+GET http://127.0.0.1:8000/kyc/all
+
+
+### Update KYC status
+PUT http://127.0.0.1:8000/kyc/update/101?status=verified
+
+### Get audit trail
+GET http://127.0.0.1:8000/kyc/logs/101
+
+
+### Submit with invalid PAN
+POST http://127.0.0.1:8000/kyc/submit
+Content-Type: application/json
+
+{
+  "user_id": "102",
+  "full_name": "Bob",
+  "email": "bob@example.com",
+  "document_type": "PAN",
+  "document_number": "12345ABCDE"
+}
