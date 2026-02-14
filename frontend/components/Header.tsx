@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
 import {
     NavigationMenu,
     NavigationMenuItem,
-    NavigationMenuList,
     NavigationMenuLink,
+    NavigationMenuList,
 } from "@/components/ui/navigation-menu";
+import InstallButton from "@/components/InstallButton";
 
 export default function Header() {
     return (
@@ -20,7 +20,7 @@ export default function Header() {
                     </NavigationMenuItem>
                 </NavigationMenuList>
             </NavigationMenu>
-            <Button variant="default">Install App</Button>
+            <InstallButton/>
         </header>
     );
 }
