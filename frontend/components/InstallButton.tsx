@@ -11,9 +11,18 @@ export default function InstallButton() {
     const [isPending, setIsPending] = useState(false);
 
     useEffect(() => {
-        // Check if already in standalone mode (installed)
-        if (window.matchMedia("(display-mode: standalone)").matches) {
+        // 1. Check if already in standalone mode (Standard PWA check)
+        const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+
+        // 2. Check LocalStorage (Our persistent fallback)
+        const wasInstalledLocally = localStorage.getItem("pwa_installed") === "true";
+
+        if (isStandalone || wasInstalledLocally) {
             setIsInstalled(true);
+            // If we are in standalone but haven't saved to localStorage yet, save it
+            if (isStandalone && !wasInstalledLocally) {
+                localStorage.setItem("pwa_installed", "true");
+            }
         }
 
         const handleBeforeInstallPrompt = (e: Event) => {
@@ -32,24 +41,28 @@ export default function InstallButton() {
         await deferredPrompt.prompt();
 
         const {outcome} = await deferredPrompt.userChoice;
-        if (outcome === "accepted") setIsInstalled(true);
+        if (outcome === "accepted") {
+            setIsInstalled(true);
+            // 3. PERSISTENCE: Save to localStorage so it stays "Installed" forever
+            localStorage.setItem("pwa_installed", "true");
+        }
 
         setDeferredPrompt(null);
         setIsPending(false);
     };
 
-    // If the app is already installed, show a subtle "Verified" state or nothing
+    // ALWAYS SHOW "App Installed" if state is true
     if (isInstalled) {
         return (
             <div
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 animate-in fade-in zoom-in duration-500">
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 animate-in fade-in zoom-in duration-500"
+            >
                 <Check className="w-3.5 h-3.5"/>
                 <span className="text-[10px] font-bold uppercase tracking-wider">App Installed</span>
             </div>
         );
     }
 
-    // Don't render anything if the browser doesn't support the prompt yet
     if (!deferredPrompt) return null;
 
     return (
@@ -72,7 +85,6 @@ export default function InstallButton() {
                 <span className="flex items-center gap-2">
                     <Download className="w-3.5 h-3.5"/>
                     <span className="text-xs">Install App</span>
-                    {/* Visual hint that it's a special action */}
                     <Sparkles className="w-3 h-3 text-blue-200 animate-pulse"/>
                 </span>
             )}

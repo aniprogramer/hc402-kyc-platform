@@ -11,6 +11,8 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
+                // --- ACTUAL LOGIC (COMMENTED OUT) ---
+                /*
                 const res = await fetch(`${process.env.PYTHON_BACKEND_URL}/auth/login`, {
                     method: "POST",
                     body: JSON.stringify(credentials),
@@ -26,7 +28,22 @@ export const authOptions: NextAuthOptions = {
                         name: user.full_name,
                     };
                 }
+                */
+
+                // --- MOCK LOGIC START ---
+                // For testing, let's allow "test@example.com" with any password
+                if (credentials?.email === "test@example.com") {
+                    console.log("MOCK AUTH: Logged in as test user");
+                    return {
+                        id: "HC-MOCK-9921", // Simulating the kyc_id from Python
+                        email: "test@example.com",
+                        name: "Alex Demo",
+                    };
+                }
+
+                // Return null if the email doesn't match our mock
                 return null;
+                // --- MOCK LOGIC END ---
             },
         }),
     ],
