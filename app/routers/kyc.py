@@ -21,7 +21,7 @@ def get_db():
     finally:
         db.close()
 
-
+# JWT auth dependency
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
