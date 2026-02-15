@@ -9,6 +9,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./uploads:/app/uploads
     restart: always
 
   frontend:
@@ -16,10 +17,7 @@ services:
       context: .
       dockerfile: deployment/docker/Dockerfile.frontend
     ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "3000:3000"
     depends_on:
       - backend
     restart: always
