@@ -73,4 +73,4 @@ Content-Type: application/json
 
 ### Protected route
 GET http://127.0.0.1:8000/kyc/all
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb25AZXhhbXBsZS5jb20iLCJleHAiOjE3NzExMzc3NjB9._SM69p7HRngbr-I84qFy4L_RIZLVYJxdkP3cCPTILkE
+Authorization: Bearer {{jwt_token}}
