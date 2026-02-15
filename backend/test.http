@@ -1,0 +1,81 @@
+### Variables
+@baseUrl = http://127.0.0.1:8000
+@email = judge_demo_01@versathon.com
+@password = secret123
+
+### ------------------------------------------------------------
+### AUTHENTICATION
+### ------------------------------------------------------------
+
+### 1. Register User
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "Judge Demo",
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 2. Login (Capture Token & KYC ID)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Set Variables from Login Response
+@authToken = {{login.response.body.access_token}}
+@kyc_id = {{login.response.body.kyc_id}}
+
+### ------------------------------------------------------------
+### KYC UPLOAD FLOW
+### ------------------------------------------------------------
+
+### 3. Upload ID Card
+# Ensure 'sample_id.jpg' exists in the same folder as this file
+POST {{baseUrl}}/kyc/upload-id?kyc_id={{kyc_id}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqdWRnZV9kZW1vXzAxQHZlcnNhdGhvbi5jb20iLCJleHAiOjE3NzExNTMwOTV9.hAJ7yx8Zx0r_oCQoa3GoBPpIgOiXL7xEnmwP43IAvPI
+Content-Type: multipart/form-data; boundary=boundary123
+
+--boundary123
+Content-Disposition: form-data; name="file"; filename="sample_id.jpg"
+Content-Type: image/jpeg
+
+ < ./sample_id.png
+--boundary123--
+
+### 4. Upload Selfie
+# Ensure 'sample_selfie.jpg' exists in the same folder as this file
+POST {{baseUrl}}/kyc/upload-selfie?kyc_id={{kyc_id}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqdWRnZV9kZW1vXzAxQHZlcnNhdGhvbi5jb20iLCJleHAiOjE3NzExNTMwOTV9.hAJ7yx8Zx0r_oCQoa3GoBPpIgOiXL7xEnmwP43IAvPI
+Content-Type: multipart/form-data; boundary=boundary456
+
+--boundary456
+Content-Disposition: form-data; name="file"; filename="sample_selfie.jpg"
+Content-Type: image/jpeg
+
+< ./sample_selfie.jpg
+--boundary456--
+
+### ------------------------------------------------------------
+### VERIFICATION & RESULTS
+### ------------------------------------------------------------
+
+### 5. Run AI Verification
+POST {{baseUrl}}/kyc/verify?kyc_id={{kyc_id}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqdWRnZV9kZW1vXzAxQHZlcnNhdGhvbi5jb20iLCJleHAiOjE3NzExNTMwOTV9.hAJ7yx8Zx0r_oCQoa3GoBPpIgOiXL7xEnmwP43IAvPI
+
+### 6. Get Result
+GET {{baseUrl}}/kyc/result?kyc_id={{kyc_id}}
+Authorization: Bearer {{authToken}}
+
+### 7. Generate PDF Report
+POST {{baseUrl}}/kyc/generate-report?kyc_id={{kyc_id}}
+Authorization: Bearer {{authToken}}
+
+### 8. Health Check
+GET {{baseUrl}}/health
