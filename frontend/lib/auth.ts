@@ -1,26 +1,27 @@
-// lib/auth.ts
-import {NextAuthOptions} from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions: NextAuthOptions = {
     providers: [
         CredentialsProvider({
-            name: "KYC Account",
+            name: "HC-402 Secure Portal",
             credentials: {
-                email: {label: "Email", type: "email"},
-                password: {label: "Password", type: "password"},
+                email: { label: "Email", type: "email" },
+                password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                // --- ACTUAL LOGIC (UNCOMMENTED) ---
+                if (!credentials?.email || !credentials?.password) return null;
+
                 try {
                     const res = await fetch(`${process.env.PYTHON_BACKEND_URL}/auth/login`, {
                         method: "POST",
                         body: JSON.stringify(credentials),
-                        headers: {"Content-Type": "application/json"},
+                        headers: { "Content-Type": "application/json" },
                     });
 
                     const user = await res.json();
 
+                    // If backend returns 200 and user data
                     if (res.ok && user) {
                         return {
                             id: user.kyc_id,
@@ -29,32 +30,20 @@ export const authOptions: NextAuthOptions = {
                         };
                     }
                 } catch (error) {
-                    // Log the error for debugging, but return null to signify auth failure
-                    console.error("Authentication backend unreachable:", error);
+                    console.error("Auth Connection Error:", error);
                 }
-
-                // --- MOCK LOGIC (COMMENTED OUT) ---
-                /*
-                if (credentials?.email === "test@example.com") {
-                    return {
-                        id: "HC-MOCK-9921",
-                        email: "test@example.com",
-                        name: "Alex Demo",
-                    };
-                }
-                */
-
-                // This explicit null return fixes the TS2322 error
                 return null;
             },
         }),
     ],
     callbacks: {
-        async jwt({token, user}) {
-            if (user) token.id = (user as any).id;
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = (user as any).id;
+            }
             return token;
         },
-        async session({session, token}) {
+        async session({ session, token }) {
             if (session.user) {
                 (session.user as any).id = token.id;
             }
