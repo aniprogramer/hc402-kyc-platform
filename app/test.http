@@ -44,3 +44,33 @@ Content-Type: application/json
   "document_type": "PAN",
   "document_number": "12345ABCDE"
 }
+
+
+### Register
+
+### Register
+POST http://127.0.0.1:8000/auth/register
+Content-Type: application/json
+
+{
+  "username": "jon",
+  "email": "jon@example.com",
+  "password": "secret123"
+}
+
+
+
+
+### Login
+POST http://127.0.0.1:8000/auth/login
+Content-Type: application/json
+
+{
+  "email": "jon@example.com",
+  "password": "secret123"
+}
+
+
+### Protected route
+GET http://127.0.0.1:8000/kyc/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb25AZXhhbXBsZS5jb20iLCJleHAiOjE3NzExMzc3NjB9._SM69p7HRngbr-I84qFy4L_RIZLVYJxdkP3cCPTILkE

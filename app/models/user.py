@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from app.db.database import Base
 
 class UserKYC(BaseModel):
     user_id: str

@@ -1,10 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.models.user import UserKYC
+from app.models.db_user import User
 from app.db.database import SessionLocal
 from app.models.db_user import User
 from app.services import ocr, face_match, fraud  
 from app.models.status_log import StatusLog
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from app.services.auth import get_current_user, SECRET_KEY, ALGORITHM
+
 import re
 
 router = APIRouter(prefix="/kyc", tags=["KYC"])
@@ -15,6 +20,27 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return username
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+
+
 
 
 def validate_pan(pan: str):
@@ -99,6 +125,9 @@ def get_logs(user_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/all")
-def get_all(db: Session = Depends(get_db)):
+def get_all(
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)   # <-- JWT required
+):
     users = db.query(User).all()
     return users
