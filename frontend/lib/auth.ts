@@ -1,5 +1,5 @@
 // lib/auth.ts
-import { NextAuthOptions } from "next-auth";
+import {NextAuthOptions} from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions: NextAuthOptions = {
@@ -7,52 +7,54 @@ export const authOptions: NextAuthOptions = {
         CredentialsProvider({
             name: "KYC Account",
             credentials: {
-                email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" },
+                email: {label: "Email", type: "email"},
+                password: {label: "Password", type: "password"},
             },
             async authorize(credentials) {
-                // --- ACTUAL LOGIC (COMMENTED OUT) ---
-                /*
-                const res = await fetch(`${process.env.PYTHON_BACKEND_URL}/auth/login`, {
-                    method: "POST",
-                    body: JSON.stringify(credentials),
-                    headers: { "Content-Type": "application/json" },
-                });
+                // --- ACTUAL LOGIC (UNCOMMENTED) ---
+                try {
+                    const res = await fetch(`${process.env.PYTHON_BACKEND_URL}/auth/login`, {
+                        method: "POST",
+                        body: JSON.stringify(credentials),
+                        headers: {"Content-Type": "application/json"},
+                    });
 
-                const user = await res.json();
+                    const user = await res.json();
 
-                if (res.ok && user) {
-                    return {
-                        id: user.kyc_id,
-                        email: user.email,
-                        name: user.full_name,
-                    };
+                    if (res.ok && user) {
+                        return {
+                            id: user.kyc_id,
+                            email: user.email,
+                            name: user.full_name,
+                        };
+                    }
+                } catch (error) {
+                    // Log the error for debugging, but return null to signify auth failure
+                    console.error("Authentication backend unreachable:", error);
                 }
-                */
 
-                // --- MOCK LOGIC START ---
-                // For testing, let's allow "test@example.com" with any password
+                // --- MOCK LOGIC (COMMENTED OUT) ---
+                /*
                 if (credentials?.email === "test@example.com") {
-                    console.log("MOCK AUTH: Logged in as test user");
                     return {
-                        id: "HC-MOCK-9921", // Simulating the kyc_id from Python
+                        id: "HC-MOCK-9921",
                         email: "test@example.com",
                         name: "Alex Demo",
                     };
                 }
+                */
 
-                // Return null if the email doesn't match our mock
+                // This explicit null return fixes the TS2322 error
                 return null;
-                // --- MOCK LOGIC END ---
             },
         }),
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({token, user}) {
             if (user) token.id = (user as any).id;
             return token;
         },
-        async session({ session, token }) {
+        async session({session, token}) {
             if (session.user) {
                 (session.user as any).id = token.id;
             }
