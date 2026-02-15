@@ -9,6 +9,9 @@ lerna-debug.log*
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# Uploads
+backend/uploads/
+
 # Runtime data
 pids
 *.pid
@@ -67,6 +70,7 @@ web_modules/
 
 # dotenv environment variable files
 .env
+.env.local
 .env.*
 !.env.example
 
@@ -145,3 +149,8 @@ vite.config.ts.timestamp-*
 *.ntvs*
 *.njsproj
 *.sln
+
+# Build
+.next/
+dist/
+build/
