@@ -8,11 +8,12 @@ import {CheckCircle2, FileWarning, Image as ImageIcon, Loader2, UploadCloud, X} 
 import {cn} from "@/lib/utils";
 
 interface FileUploadProps {
-    onUploadSuccess?: (data: any) => void;
+    kycId: string; // Add kycId as a prop to associate the upload
+    onUploadSuccess?: (filename: string) => void;
     className?: string;
 }
 
-export default function FileUpload({onUploadSuccess, className}: FileUploadProps) {
+export default function FileUpload({kycId, onUploadSuccess, className}: FileUploadProps) {
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -22,20 +23,20 @@ export default function FileUpload({onUploadSuccess, className}: FileUploadProps
     const handleFileChange = (selectedFile: File | undefined) => {
         if (!selectedFile) return;
 
-        // Validate File Type & Size (Max 5MB)
-        if (!selectedFile.type.startsWith("image/")) {
-            setError("Please upload an image file (JPG, PNG, PDF).");
+        const allowedTypes = ["image/jpeg", "image/png"];
+        if (!allowedTypes.includes(selectedFile.type)) {
+            setError("Invalid file type. Only JPEG and PNG allowed.");
             return;
         }
+
         if (selectedFile.size > 5 * 1024 * 1024) {
-            setError("File is too large. Max limit is 5MB.");
+            setError("File too large. Max size is 5MB.");
             return;
         }
 
         setError(null);
         setFile(selectedFile);
 
-        // Create Preview URL
         const reader = new FileReader();
         reader.onloadend = () => setPreview(reader.result as string);
         reader.readAsDataURL(selectedFile);
@@ -48,27 +49,46 @@ export default function FileUpload({onUploadSuccess, className}: FileUploadProps
         setError(null);
     };
 
+    // --- PROPER HANDLE UPLOAD ---
     async function handleUpload() {
-        if (!file) return;
+        console.log("Triggering Upload..."); // Debug 1
+        if (!file) {
+            console.error("No file selected");
+            return;
+        }
+        if (!kycId) {
+            console.error("No kycId provided to component");
+            setError("Session ID missing. Please refresh.");
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
         try {
             const formData = new FormData();
-            formData.append("document", file);
+            formData.append("file", file); // Must match FastAPI 'file' parameter
 
-            // Simulated Delay for Demo Effect
-            const res = await fetch("/api/upload", {
+            console.log(`Sending to /api/kyc/upload-id?kyc_id=${kycId}`); // Debug 2
+
+            const res = await fetch(`/api/kyc/upload-id?kyc_id=${kycId}`, {
                 method: "POST",
                 body: formData,
             });
 
-            if (!res.ok) throw new Error("Connection unstable. Queuing for background sync.");
+            console.log("Response status:", res.status); // Debug 3
 
-            onUploadSuccess?.(await res.json());
+            const result = await res.json();
+            if (!res.ok || !result.success) {
+                throw new Error(result.message || "Upload failed");
+            }
+
+            console.log("Upload Success:", result);
+            onUploadSuccess?.(result.data.filename);
+
         } catch (err: any) {
+            console.error("Catch block error:", err);
             setError(err.message);
-            // Logic for PWA Background Sync would go here
         } finally {
             setLoading(false);
         }
@@ -97,7 +117,7 @@ export default function FileUpload({onUploadSuccess, className}: FileUploadProps
                 <Input
                     id="file-input"
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png"
                     className="hidden"
                     onChange={(e) => handleFileChange(e.target.files?.[0])}
                 />
@@ -112,18 +132,13 @@ export default function FileUpload({onUploadSuccess, className}: FileUploadProps
                             <p className="text-sm font-bold text-slate-900">Upload ID Document</p>
                             <p className="text-xs text-slate-500 mt-1">Drag and drop or click to browse</p>
                         </div>
-                        <div className="flex gap-2">
-                            <span
-                                className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-1 rounded">PNG</span>
-                            <span
-                                className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-1 rounded">JPG</span>
-                            <span
-                                className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-1 rounded">PDF</span>
+                        <div className="flex gap-2 text-[10px] font-bold text-slate-400">
+                            <span className="bg-slate-100 px-2 py-1 rounded">PNG</span>
+                            <span className="bg-slate-100 px-2 py-1 rounded">JPG</span>
                         </div>
                     </div>
                 ) : (
                     <div className="p-4 flex items-center gap-4">
-                        {/* Image Thumbnail Preview */}
                         <div className="relative w-20 h-20 rounded-xl overflow-hidden border bg-white shrink-0">
                             {preview ? (
                                 <img src={preview} alt="Preview" className="w-full h-full object-cover"/>
@@ -140,7 +155,7 @@ export default function FileUpload({onUploadSuccess, className}: FileUploadProps
                             <p className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                             <div className="flex items-center gap-1 text-blue-600 mt-1">
                                 <CheckCircle2 className="w-3 h-3"/>
-                                <span className="text-[10px] font-bold uppercase">Ready to scan</span>
+                                <span className="text-[10px] font-bold uppercase tracking-tight">Image Verified</span>
                             </div>
                         </div>
 
@@ -156,7 +171,6 @@ export default function FileUpload({onUploadSuccess, className}: FileUploadProps
                 )}
             </Card>
 
-            {/* ERROR MESSAGE */}
             {error && (
                 <div
                     className="flex items-center gap-2 p-3 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-100">
@@ -165,7 +179,6 @@ export default function FileUpload({onUploadSuccess, className}: FileUploadProps
                 </div>
             )}
 
-            {/* ACTION BUTTON */}
             <Button
                 onClick={handleUpload}
                 disabled={!file || loading}
@@ -175,12 +188,9 @@ export default function FileUpload({onUploadSuccess, className}: FileUploadProps
                 )}
             >
                 {loading ? (
-                    <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin"/>
-                        Extracting Data...
-                    </>
+                    <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Uploading...</>
                 ) : (
-                    "Proceed to Verification"
+                    "Upload ID for Analysis"
                 )}
             </Button>
         </div>
