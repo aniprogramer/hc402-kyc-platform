@@ -22,7 +22,7 @@ export default withPWA({
             options: {cacheName: "google-fonts-stylesheets",},
         },
         {
-            urlPattern: /^https:\/\/your-backend-domain\.com\/api\/.*$/i,
+            urlPattern: /^\/api\/.*$/i,
             handler: "NetworkFirst",
             options: {
                 cacheName: "api-cache",

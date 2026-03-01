@@ -18,6 +18,15 @@ services:
       dockerfile: deployment/docker/Dockerfile.frontend
     ports:
       - "3000:3000"
+    environment:
+      # For server-side Next.js fetching (NextAuth, etc.)
+      - PYTHON_BACKEND_URL=http://backend:8000
+      
+      # For client-side browser fetching (Signup forms, etc.)
+      - NEXT_PUBLIC_PYTHON_BACKEND_URL=http://localhost:8000
+      
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=my_super_secret_key_123
     depends_on:
       - backend
     restart: always

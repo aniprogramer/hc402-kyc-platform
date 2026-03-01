@@ -18,7 +18,7 @@ export default function SignupPage() {
 
         try {
             // Pointing to your teammate's FastAPI /auth/register endpoint
-            const res = await fetch(`${process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL}/auth/register`, {
+            const res = await fetch(`http://localhost:8000/auth/register`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(formData),

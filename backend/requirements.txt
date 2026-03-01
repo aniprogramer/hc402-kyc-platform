@@ -3,3 +3,13 @@ uvicorn
 python-multipart
 sqlalchemy
 reportlab
+easyocr
+deepface
+pytesseract
+opencv-python-headless
+numpy
+face-recognition
+dlib
+imutils
+scipy
+Pillow

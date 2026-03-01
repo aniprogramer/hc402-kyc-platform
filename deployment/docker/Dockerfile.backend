@@ -2,9 +2,28 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# Added cmake (for dlib/face_recognition) and tesseract-ocr (for pytesseract)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
+
+# ... (Everything above stays exactly the same) ...
+
 COPY backend/requirements.txt .
 
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
+
+
+
+RUN pip install tf-keras email-validator passlib bcrypt==4.0.1 python-jose
 
 COPY backend/ .
 
